@@ -1,6 +1,6 @@
 # QQ Bot ↔ Claude Bridge
 
-桥接 **QQ 开放平台机器人** 到 **Anthropic 兼容 API** (DeepSeek / Claude) 的服务。
+桥接 **QQ 开放平台机器人** 到 **Anthropic 兼容 API** (DeepSeek / Claude) 的 Node.js 服务。
 
 > 收到 QQ 私聊或群聊 @消息后，调用 AI API 获取回复，再将回复发回给 QQ 用户。
 
@@ -15,6 +15,8 @@
 - **沙箱模式** — 支持 QQ 开放平台沙箱环境调试
 - **群聊引用回复** — 群聊时自动附带引用原文
 - **PM2 就绪** — 内置 pm2 启动脚本，生产环境部署友好
+
+---
 
 ## 架构示意
 
@@ -31,40 +33,74 @@
                               └──────────┘
 ```
 
-## 快速开始
+---
 
-### 前置要求
+## 部署指南
 
-- **Node.js >= 18**
-- **QQ 机器人** — 在 [QQ 开放平台](https://q.qq.com) 注册并创建机器人，获取 AppID 和 AppSecret
-- **API Key** — 注册 [DeepSeek](https://platform.deepseek.com) 并创建 API Key（或使用其他 Anthropic 兼容 API）
+### 第 1 步：注册 QQ 机器人
 
-### 安装步骤
+1. 打开 [QQ 开放平台](https://q.qq.com)，登录后进入「应用管理」
+2. 点击「创建机器人」→ 填写名称、简介等信息
+3. 创建完成后，进入「开发设置」页面
+4. 记录 **AppID**（机器人 ID）和 **AppSecret**（机器人密钥）
+
+### 第 2 步：获取 AI API Key
+
+1. 注册 [DeepSeek 开放平台](https://platform.deepseek.com)（或其他 Anthropic 兼容 API）
+2. 在「API Keys」页面创建一个新 Key
+3. 复制保存该 Key
+
+> 也可使用 Anthropic 官方 API，见下方[配置说明](#使用-claude-官方-api)。
+
+### 第 3 步：部署服务
+
+**本地 / 开发机运行：**
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/你的用户名/qq-claude-bridge.git
+# 克隆仓库
+git clone https://github.com/pythontryer/qq-claude-bridge.git
 cd qq-claude-bridge
 
-# 2. 安装依赖
+# 安装依赖
 npm install
 
-# 3. 配置环境变量
+# 创建配置文件
 cp .env.example .env
-# 编辑 .env，填入你的凭据（见下方配置说明）
 
-# 4. 启动服务
+# 编辑 .env，填入你的 AppID、AppSecret 和 API Key
+# （用任意文本编辑器打开 .env 文件修改）
+
+# 启动服务（沙箱模式，用于测试）
 npm start
 ```
 
-### PM2 生产部署
+**服务器生产部署（使用 PM2）：**
 
 ```bash
+# 安装 PM2
 npm install -g pm2
+
+# 克隆并配置（同上）
+git clone https://github.com/pythontryer/qq-claude-bridge.git
+cd qq-claude-bridge
+npm install
+cp .env.example .env
+# 编辑 .env 填入凭据
+
+# 使用 PM2 启动（自动重启、开机自启）
 npm run pm2
 pm2 save
 pm2 startup
 ```
+
+### 第 4 步：从沙箱到正式上线
+
+1. 先在 `.env` 中保持 `SANDBOX=true`，在 QQ 开放平台沙箱环境中测试
+2. 确认机器人收发消息正常后，在 QQ 开放平台提交审核
+3. 审核通过后，将 `.env` 中的 `SANDBOX` 改为 `false`
+4. 重启服务：`npm run pm2 && pm2 restart qq-claude-bridge`
+
+---
 
 ## 配置说明
 
@@ -90,6 +126,8 @@ ANTHROPIC_API_KEY=sk-ant-你的ClaudeKey
 MODEL=claude-sonnet-4-20250514
 ```
 
+---
+
 ## 项目文件结构
 
 ```
@@ -103,12 +141,34 @@ qq-claude-bridge/
 └── CONTRIBUTING.md   # 贡献指南
 ```
 
+---
+
+## 常见问题
+
+**启动时提示「请设置 QQ_APP_ID 和 QQ_APP_SECRET 环境变量」**
+
+检查 `.env` 文件是否存在且已正确填写。确保 `.env` 文件与 `index.js` 在同一目录下。
+
+**机器人不回复消息**
+
+- 确认 `.env` 中 `SANDBOX=true`（未审核的机器人必须使用沙箱模式）
+- 检查 QQ 开放平台「开发设置」中的 WebSocket 地址是否正确
+- 查看终端日志输出排查具体错误
+
+**消息回复超长被截断**
+
+代码已内置分段逻辑（每段不超过 1800 字符），正常情况下不会被截断。如仍有问题，可在 `index.js` 中调整分段大小。
+
+---
+
 ## 技术栈
 
 - [qq-official-bot](https://www.npmjs.com/package/qq-official-bot) — QQ 开放平台官方机器人 SDK
 - [@anthropic-ai/sdk](https://www.npmjs.com/package/@anthropic-ai/sdk) — Anthropic API 客户端
 - [dotenv](https://www.npmjs.com/package/dotenv) — 环境变量加载
 - [pm2](https://pm2.keymetrics.io/) — 进程管理（可选）
+
+---
 
 ## 许可证
 
