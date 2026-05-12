@@ -22,7 +22,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/你的用户名/qq-claude-bridge"
+    "url": "https://github.com/pythontryer/qq-claude-bridge"
   },
   "engines": {
     "node": ">=18"
