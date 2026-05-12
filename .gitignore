@@ -1,0 +1,32 @@
+# 依赖
+node_modules/
+
+# 环境变量（含真实凭据）
+.env
+.env.local
+.env.*.local
+
+# PM2 运行时文件
+.pm2/
+ecosystem.config.js
+
+# 运行时日志
+logs/
+*.log
+
+# Claude Code 内部状态
+.claude/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+tmp/
+temp/
